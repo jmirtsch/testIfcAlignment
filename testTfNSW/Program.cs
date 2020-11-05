@@ -125,7 +125,7 @@ namespace testTfNSW
 			IfcProductDefinitionShape productDefinitionShape = new IfcProductDefinitionShape(new IfcShapeRepresentation(extrudedAreaSolid));
 			IfcPile pile = new IfcPile(railway, linearPlacement, productDefinitionShape);
 	
-			db.WriteFile(@"F:\My Work\buildingSMART\projects\alignment\test files\test_TfNSW.ifc");
+			db.WriteFile(args[0]);
 
 		}
 	}
