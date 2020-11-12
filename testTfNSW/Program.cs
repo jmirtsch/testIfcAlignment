@@ -82,7 +82,7 @@ namespace testTfNSW
 
 			IfcCompositeCurve alignmentCurve = new IfcCompositeCurve(compositeSegments);
 			double startDist = -123;
-			IfcAlignmentHorizontal alignmentHorizontal = new IfcAlignmentHorizontal(alignment, new List<IfcAlignmentHorizontalSegment>())
+			IfcAlignmentHorizontal alignmentHorizontal = new IfcAlignmentHorizontal(alignment, linearSegment, transitionSegment, arcSegment)
 			{
 				StartDistAlong = startDist,
 			};
@@ -94,7 +94,6 @@ namespace testTfNSW
 			alignmentSegment.GlobalId = "2_crD$eoPDah_QvgsPhXF3";
 			alignmentSegment.ObjectType = "TFNSW";
 			new IfcPropertySet(alignmentSegment, "TfNSW_Transition", new IfcPropertySingleValue(db, "m", m));
-		
 
 			IfcPointByDistanceExpression verticalDistanceExpression = new IfcPointByDistanceExpression(0, alignmentCurve);
 			double startHeight = 25;
@@ -125,6 +124,8 @@ namespace testTfNSW
 			IfcExtrudedAreaSolid extrudedAreaSolid = new IfcExtrudedAreaSolid(new IfcRectangleProfileDef(db, "", 0.5, 0.5), 5);
 			IfcProductDefinitionShape productDefinitionShape = new IfcProductDefinitionShape(new IfcShapeRepresentation(extrudedAreaSolid));
 			IfcPile pile = new IfcPile(railway, linearPlacement, productDefinitionShape);
+
+			new IfcRelPositions(db, alignment, new List<IfcProduct>() { pile });
 	
 			db.WriteFile(args[0]);
 
