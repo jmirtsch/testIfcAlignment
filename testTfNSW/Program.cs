@@ -27,10 +27,8 @@ namespace testTfNSW
 			IfcAlignment alignment = new IfcAlignment(railway) { Name = "TfNSW Alignment", GlobalId = "1F78QPlVv6N9AnnF$LSkp$" };
 			IfcCartesianPoint alignmentOrigin = new IfcCartesianPoint(db, 0, 0, 0);
 			//IfcCartesianPoint alignmentOrigin = new IfcCartesianPoint(db, 1000, 2000, 3000);
-			IfcObjectPlacement alignmentPlacement = alignment.ObjectPlacement = new IfcLocalPlacement(new IfcAxis2Placement3D(alignmentOrigin));
+			alignment.ObjectPlacement = new IfcLocalPlacement(new IfcAxis2Placement3D(alignmentOrigin));
 
-		
-			
 			double lineLength = 100;
 			IfcCartesianPoint point1 = new IfcCartesianPoint(db, -lineLength, 0);
 			IfcCartesianPoint point2 = new IfcCartesianPoint(db, 0, 0);
@@ -81,13 +79,15 @@ namespace testTfNSW
 			compositeSegments.Add(new IfcCompositeCurveSegment(IfcTransitionCode.CONTSAMEGRADIENTSAMECURVATURE,true, trimmedCurve));
 
 			IfcCompositeCurve alignmentCurve = new IfcCompositeCurve(compositeSegments);
+			alignment.Axis = alignmentCurve;
+
 			double startDist = -123;
 			IfcAlignmentHorizontal alignmentHorizontal = new IfcAlignmentHorizontal(alignment, linearSegment, transitionSegment, arcSegment)
 			{
 				StartDistAlong = startDist,
 			};
 			alignmentHorizontal.GlobalId = "0sEEGBFgr289x9s$R$T7N9";
-			alignmentPlacement = alignmentHorizontal.ObjectPlacement = new IfcLocalPlacement(alignmentPlacement, db.Factory.XYPlanePlacement);
+			alignmentHorizontal.ObjectPlacement = alignment.ObjectPlacement;
 			alignmentHorizontal.Representation = new IfcProductDefinitionShape(new IfcShapeRepresentation(axisSubContext, alignmentCurve, ShapeRepresentationType.Curve2D));
 
 			IfcAlignmentSegment alignmentSegment = new IfcAlignmentSegment(alignmentHorizontal, transitionSegment);
@@ -120,12 +120,20 @@ namespace testTfNSW
 			IfcPointByDistanceExpression distanceExpression = new IfcPointByDistanceExpression(150, alignmentCurve);
 			distanceExpression.OffsetLateral = 5;
 			IfcAxis2PlacementLinear axis2PlacementLinear = new IfcAxis2PlacementLinear(distanceExpression);
-			IfcLinearPlacement linearPlacement = new IfcLinearPlacement(alignmentPlacement , axis2PlacementLinear);
+			IfcLinearPlacement linearPlacement = new IfcLinearPlacement(alignment.ObjectPlacement , axis2PlacementLinear);
 			IfcExtrudedAreaSolid extrudedAreaSolid = new IfcExtrudedAreaSolid(new IfcRectangleProfileDef(db, "", 0.5, 0.5), 5);
 			IfcProductDefinitionShape productDefinitionShape = new IfcProductDefinitionShape(new IfcShapeRepresentation(extrudedAreaSolid));
 			IfcPile pile = new IfcPile(railway, linearPlacement, productDefinitionShape);
 
 			new IfcRelPositions(db, alignment, new List<IfcProduct>() { pile });
+
+			// Conceptual 50m span Bridge from chainage -80
+			distanceExpression = new IfcPointByDistanceExpression(-80 - startDist, alignmentCurve);
+			axis2PlacementLinear = new IfcAxis2PlacementLinear(distanceExpression);
+			IfcCurveSegment curveSegment = new IfcCurveSegment(IfcTransitionCode.CONTINUOUS, axis2PlacementLinear, 50, alignmentCurve);
+
+			productDefinitionShape = new IfcProductDefinitionShape(new IfcShapeRepresentation(axisSubContext, curveSegment, ShapeRepresentationType.Curve2D));
+			IfcBridge bridge = new IfcBridge(railway, alignment.ObjectPlacement, productDefinitionShape);
 	
 			db.WriteFile(args[0]);
 
